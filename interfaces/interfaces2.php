@@ -4,29 +4,47 @@ interface StandardPaymentInterface {
     public function pay();
 }
 
-interface TransactionCheckInterface {
+interface FraudCheckInterface {
     public function fraudCheck();
 }
 
-class PayFee implements StandardPaymentInterface {
-    public function pay() {}
+interface ThreeDSecureCheckInterface {
+    public function ThreeDCheck();
 }
 
-class WorldFee implements StandardPaymentInterface {
-    public function pay() {}
+interface PaymentProcessInterface {
+    public function process();
 }
 
-class MintFee implements StandardPaymentInterface, TransactionCheckInterface {
+class PayFee implements StandardPaymentInterface, PaymentProcessInterface, ThreeDSecureCheckInterface {
     public function pay() {}
-    public function fraudCheck() {
+    public function ThreeDCheck() { }
+    public function process() {
+        $this->ThreeDCheck();
+        $this->pay();
+    }
 
+}
+
+class WorldFee implements StandardPaymentInterface, PaymentProcessInterface {
+    public function pay() {}
+    public function process() {
+        $this->pay();
+    }
+}
+
+class MintFee implements StandardPaymentInterface, FraudCheckInterface, PaymentProcessInterface {
+    public function pay() {}
+    public function fraudCheck() {}
+    public function process() {
+        $this->fraudCheck();
+        $this->pay();
     }
 }
 
 class PaymentGateway {
-    public function takePayment(StandardPaymentInterface $paymentType) {
-        $paymentType->fraudCheck();
-        $paymentType->pay();
+    public function takePayment(PaymentProcessInterface $paymentType) {
+        $paymentType->process();
     }
 }
 
